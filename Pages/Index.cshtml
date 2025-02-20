@@ -1,0 +1,292 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Patient Information System";
+}
+
+
+<div class="container mt-4">
+    <h2 class="mb-3">Patient Information System</h2>
+ <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addPatientModal">Add Patient</button>
+
+    <form method="get" class="form-inline mb-3">
+        <div class="row">
+        <div class="col-md-4">
+        <input type="text" name="search" class="form-control mr-2" placeholder="Search by Name" value="@Model.SearchTerm" />
+        </div>
+        <div class="col-md-1">
+        <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+         <div class="col-md-1">
+        <a  href="/Index" class="btn btn-secondary">Reset</a>
+        </div>
+        </div>
+    </form>
+
+
+    
+     <table class="table table-bordered table-striped table-hover table-responsive table-sm">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Middle Name</th>
+                <th>Suffix</th>
+                <th>Gender</th>
+                <th>Birthday</th>
+                <th>Contact No</th>
+                <th>Address</th>
+                <th>Date of Consultation</th>
+                <th>Chief Complaint</th>
+                <th>Purpose of Visit</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var patient in Model.Patients)
+            {
+                <tr>
+                    <td>@patient.FirstName</td>
+                    <td>@patient.LastName</td>
+                    <td>@patient.MiddleName</td>
+                    <td>@patient.Suffix</td>
+                    <td>@patient.Gender</td>
+                    <td>@patient.Birthday.ToShortDateString()</td>
+                    <td>@patient.ContactNo</td>
+                    <td>@patient.Address</td>
+                    <td>@patient.DateOfConsultation.ToShortDateString()</td>
+                    <td>@patient.ChiefComplaint</td>
+                    <td>@patient.PurposeOfVisit</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="populateEditModal(@patient.Id, '@patient.FirstName', '@patient.LastName', '@patient.MiddleName', '@patient.Suffix', '@patient.Gender', '@patient.Birthday.ToString("yyyy-MM-dd")', '@patient.ContactNo', '@patient.Address', '@patient.DateOfConsultation.ToString("yyyy-MM-dd")', '@patient.ChiefComplaint', '@patient.PurposeOfVisit')" data-bs-toggle="modal" data-bs-target="#editPatientModal">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deletePatient(@patient.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addPatientModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Patient</h5>
+                <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+            </div>
+            <form method="post" asp-page-handler="Add">
+                <div class="modal-body">
+                   <div class="form-group">
+                        <label>First Name</label>
+                        <input id="FirstName" name="FirstName" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Last Name</label>
+                        <input id="LastName" name="LastName" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Middle Name</label>
+                        <input id="MiddleName" name="MiddleName" class="form-control" />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Suffix</label>
+                        <select id="Suffix" name="Suffix" class="form-control">
+                            <option value="N/A">N/A</option>
+                            <option value="Jr">Jr</option>
+                            <option value="Sr">Sr</option>
+                            <option value="II">II</option>
+                            <option value="III">III</option>
+                        </select>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Gender</label>
+                        <select id="Gender" name="Gender" class="form-control">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Birthday</label>
+                        <input id="Birthday" type="date" name="Birthday" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Contact No</label>
+                        <input id="ContactNo" name="ContactNo" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Address</label>
+                        <input id="Address" name="Address" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Date of Consultation</label>
+                        <input id="DateOfConsultation" type="date" name="DateOfConsultation" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Chief Complaint</label>
+                        <input id="ChiefComplaint" name="ChiefComplaint" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Purpose of Visit</label>
+                        <input id="PurposeOfVisit" name="PurposeOfVisit" class="form-control" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editPatientModal" tabindex="-1" aria-labelledby="editPatientModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPatientModalLabel">Edit Patient</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="Edit">
+                <input type="hidden" id="editId" name="Id" />
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input id="editFirstName" name="FirstName" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Last Name</label>
+                        <input id="editLastName" name="LastName" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Middle Name</label>
+                        <input id="editMiddleName" name="MiddleName" class="form-control" />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Suffix</label>
+                        <select id="editSuffix" name="Suffix" class="form-control">
+                            <option value="N/A">N/A</option>
+                            <option value="Jr">Jr</option>
+                            <option value="Sr">Sr</option>
+                            <option value="II">II</option>
+                            <option value="III">III</option>
+                        </select>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Gender</label>
+                        <select id="editGender" name="Gender" class="form-control">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Birthday</label>
+                        <input id="editBirthday" type="date" name="Birthday" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Contact No</label>
+                        <input id="editContactNo" name="ContactNo" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Address</label>
+                        <input id="editAddress" name="Address" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Date of Consultation</label>
+                        <input id="editDateOfConsultation" type="date" name="DateOfConsultation" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Chief Complaint</label>
+                        <input id="editChiefComplaint" name="ChiefComplaint" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Purpose of Visit</label>
+                        <input id="editPurposeOfVisit" name="PurposeOfVisit" class="form-control" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert Delete Confirmation -->
+<script>
+    function deletePatient(id) {
+        swal({
+            title: "Are you sure?",
+            text: "You will not be able to recover this record!",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                window.location.href = '/Index?handler=Delete&id=' + id;
+            }
+        });
+    }
+   function searchPatients() {
+        let input = document.getElementById('searchInput').value.toLowerCase();
+        let rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            let text = row.innerText.toLowerCase();
+            row.style.display = text.includes(input) ? '' : 'none';
+        });
+    }
+    function populateEditModal(id, firstName, lastName, middleName, suffix, gender, birthday, contactNo, address, dateOfConsultation, chiefComplaint, purposeOfVisit) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editFirstName').value = firstName;
+        document.getElementById('editLastName').value = lastName;
+        document.getElementById('editMiddleName').value = middleName;
+        document.getElementById('editSuffix').value = suffix;
+        document.getElementById('editGender').value = gender;
+        document.getElementById('editBirthday').value = birthday;
+        document.getElementById('editContactNo').value = contactNo;
+        document.getElementById('editAddress').value = address;
+        document.getElementById('editDateOfConsultation').value = dateOfConsultation;
+        document.getElementById('editChiefComplaint').value = chiefComplaint;
+        document.getElementById('editPurposeOfVisit').value = purposeOfVisit;
+    }
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var successMessage = "@TempData["SuccessMessage"]";
+        var deleteMessage = "@TempData["DeleteMessage"]";
+        var saveMessage = "@TempData["SaveMessage"]";
+
+        if (successMessage) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: successMessage,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
+        
+        if (deleteMessage) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Deleted!',
+                text: deleteMessage,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
+
+        if (saveMessage) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Saved!',
+                text: saveMessage,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
+    });
+</script>
